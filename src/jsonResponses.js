@@ -33,15 +33,16 @@ const addPost = (request, response, body) => {
 
   let responseCode = 201;
 
-  if (posts[id]) {
+  if (posts[body.title]) {
     responseCode = 204;
   } else {
-    posts[id] = {};
+    posts[body.title] = {};
+    id++;
   }
 
-  posts[id].title = body.title;
-  posts[id].data = body.data;
-  id++;
+  posts[body.title].id = id;
+  posts[body.title].title = body.title;
+  posts[body.title].data = body.data;
 
   if (responseCode === 201) {
     responseJSON.message = 'Created Successfully';

@@ -3,8 +3,8 @@
 var handleResponse = function handleResponse(xhr) {
   var content = document.querySelector("#content");
 
-  var obj = JSON.parse(xhr.response);
-  console.dir(obj);
+  //const obj = JSON.parse(xhr.response);
+  //console.dir(obj);
 
   switch (xhr.status) {
     case 200:
@@ -32,22 +32,22 @@ var handleResponse = function handleResponse(xhr) {
 document.addEventListener('DOMContentLoaded', function () {
 
     //Initialize grid 
-
     var grid = null;
-    var docElem = document.documentElement;
+    var postData;
     var gridElement = document.querySelector('.grid');
-    var sortField = document.querySelector('.sort');
-    var searchField = document.querySelector('.search');
-    var updateButton = document.querySelector('.updateButton');
+    var sortField = document.querySelector('.sortOptions');
+    var searchField = document.querySelector('.inputSearch');
+    var updateButton = document.querySelector('#save');
+    var dragOrder = [];
     var sortFieldValue;
     var searchFieldValue;
 
-    function init() {
+    var init = function init() {
         initGrid();
-
+        postData = postsObject.getInstance();
         //Reset field values
         searchField.value = '';
-        sortField.value = sortField.querySelector('.sortOptions')[0].value;
+        sortField.value = sortField[0].value;
 
         //set initial search query, active sort value
         searchFieldValue = searchField.value.toLowerCase();
@@ -58,41 +58,77 @@ document.addEventListener('DOMContentLoaded', function () {
             var newSearch = searchField.value.toLowerCase();
             if (searchField !== newSearch) {
                 searchFieldValue = newSearch;
-                //filter();
+                filter();
             }
         });
 
         //sort layout binding 
-        //TODO: sortField.addEventListener('change', sort);
+        sortField.addEventListener('change', sort);
 
         gridElement.addEventListener('click', function (e) {
             //TODO: GET REQUEST -> QUIL
+            var postKey = e.target.innerText;
+            if (e.target.className !== "grid muuri") {
+                if (e.target.className === "card") {
+                    postKey = e.target.children[0].innerText;
+                }
+                var titleField = document.querySelector('#titleField');
+                var quillDelta = JSON.parse(postData.getPostList[postKey].data);
+                postText.setContents(quillDelta);
+            }
         });
 
         updateButton.addEventListener('click', function (e) {
-            clearGrid();
             grid.refreshItems();
             updateGrid(e);
         });
-    }
+    };
 
-    function clearGrid(e) {
-        gridElement.innerHTML = '';
-    }
+    var filter = function filter() {
+        grid.filter(function (item) {
+            var element = item.getElement();
+            var isSearchMatch = !searchFieldValue ? true : (element.getAttribute('data-title') || '').toLowerCase().indexOf(searchFieldValue) > -1;
+            return isSearchMatch;
+        });
+    };
 
-    function updateGrid(e) {
+    var sort = function sort() {
+        //Do nothing if sort value did not change
+        var currentSort = sortField.value;
+        if (sortFieldValue === currentSort) {
+            return;
+        }
+
+        if (sortFieldValue === 'order') {
+            dragOrder = grid.getItems();
+        }
+
+        grid.sort(currentSort === 'title' ? compareItemTitle : currentSort === 'recent' ? compareItemRecent : dragOrder);
+        sortFieldValue = currentSort;
+    };
+
+    var updateGrid = function updateGrid(e) {
         requestUpdate(e);
-    }
+    };
 
-    function initGrid() {
-        grid = new Muuri(gridElement);
-    }
+    var initGrid = function initGrid() {
+        grid = new Muuri(gridElement, {
+            layoutDuration: 400,
+            layoutEasing: 'ease'
+        });
+    };
 
     var handleGetResponse = function handleGetResponse(xhr) {
         handleResponse(xhr);
         var posts = JSON.parse(xhr.response);
-        var newElems = generateElements(posts);
-        grid.add(newElems);
+        postData.addPost(posts.posts);
+        var newElems = generateElements(postData.getNewPost);
+        if (newElems.length) grid.add(newElems);
+
+        //sort items
+        grid.sort(sortFieldValue === 'title' ? compareItemTitle : compareItemRecent);
+        //filter items
+        filter();
     };
 
     var requestUpdate = function requestUpdate(e) {
@@ -113,12 +149,23 @@ document.addEventListener('DOMContentLoaded', function () {
         return Math.floor(Math.random() * (max - min + 1) + min);
     };
 
+    var compareItemTitle = function compareItemTitle(a, b) {
+        var aVal = a.getElement().getAttribute('data-title') || '';
+        var bVal = b.getElement().getAttribute('data-title') || '';
+        return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+    };
+
+    var compareItemRecent = function compareItemRecent(a, b) {
+        var aId = parseInt(a.getElement().getAttribute('data-id'));
+        var bId = parseInt(b.getElement().getAttribute('data-id'));
+        return aId - bId;
+    };
+
     var generateElements = function generateElements(posts) {
-        var grid = document.querySelector('.grid');
         var ret = [];
-        var postList = posts.posts;
-        for (var key in postList) {
-            ret.push(generateElement(key, postList[key].title));
+        while (postData.getNewPost.length > 0) {
+            var newPost = postData.getNewPost.pop();
+            ret.push(generateElement(newPost.id, newPost.title));
         }
         return ret;
     };
@@ -126,11 +173,9 @@ document.addEventListener('DOMContentLoaded', function () {
     var generateElement = function generateElement(id, title) {
         var itemElem = document.createElement('div');
         var height = getRandomInt(1, 2);
-        var width = getRandomInt(1, 2);
+        var width = 2;
         var classNames = 'item h' + height + ' w' + width;
-        itemElem.className = 'item';
-        var itemTemplate = '' + '<div class="' + classNames + '" data-id="' + id + '" data-title="' + title + '">' + '<div class="item-content">' + '<div class="card">' + '<div class="card-title">' + title + '</div>' + '<div class="card-id">' + id + '</div>' + '</div>' + '</div>';
-        '</div>';
+        var itemTemplate = '' + '<div class="' + classNames + '" data-id="' + id + '" data-title="' + title + '">' + '<div class="item-content">' + '<div class="card">' + '<div class="card-title">' + title + '</div>' + '<div class="card-id">' + id + '</div>' + '</div>' + '</div>' + '</div>';
 
         itemElem.innerHTML = itemTemplate;
         return itemElem.firstChild;
@@ -138,3 +183,38 @@ document.addEventListener('DOMContentLoaded', function () {
 
     init();
 });
+"use strict";
+
+var postsObject = function () {
+    var instance;
+
+    function createInstance() {
+        var postsList = {};
+        var newPost = [];
+
+        return {
+            addPost: function addPost(serverPostList) {
+                for (var key in serverPostList) {
+                    if (!postsList[key]) {
+                        postsList[key] = {};
+                        newPost.push(serverPostList[key]);
+                    }
+                    postsList[key].id = serverPostList[key].id;
+                    postsList[key].title = serverPostList[key].title;
+                    postsList[key].data = serverPostList[key].data;
+                }
+            },
+            getPostList: postsList,
+            getNewPost: newPost
+        };
+    };
+
+    return {
+        getInstance: function getInstance() {
+            if (!instance) {
+                instance = createInstance();
+            }
+            return instance;
+        }
+    };
+}();

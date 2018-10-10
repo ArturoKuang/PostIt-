@@ -1,8 +1,8 @@
 const handleResponse = (xhr) => {
   const content = document.querySelector("#content");
 
-  const obj = JSON.parse(xhr.response);
-  console.dir(obj);
+  //const obj = JSON.parse(xhr.response);
+  //console.dir(obj);
 
   switch (xhr.status) {
     case 200:
