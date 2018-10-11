@@ -51,8 +51,23 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         updateButton.addEventListener('click', function (e) {
+            const titleField = document.querySelector('#titleField');
+            if (titleField.value.length !== 0) {
+                window.delta = quill.getContents();
+    
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/addPost');
+                xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                xhr.setRequestHeader('Accept', 'application/json');
+                xhr.onload = () => handleResponse(xhr, true);
+                const data = `title=${titleField.value}&data=${JSON.stringify(window.delta)}`;
+                //const postData = JSON.stringify(data);
+                xhr.send(data);
+            }
             grid.refreshItems();
             updateGrid(e);
+            e.preventDefault();
+            return false;
         });
 
     };
@@ -165,6 +180,35 @@ document.addEventListener('DOMContentLoaded', function () {
         itemElem.innerHTML = itemTemplate;
         return itemElem.firstChild;
     };
+
+
+    var quill = new Quill('#editor', {
+        theme: 'snow'
+    });
+
+    var postText = new Quill('#postText', {
+        theme: ''
+    });
+
+    postText.enable(false);
+
+    // $('#save').click(function (e) {
+    //     const titleField = document.querySelector('#titleField');
+    //     if (titleField.value.length !== 0) {
+    //         window.delta = quill.getContents();
+
+    //         const xhr = new XMLHttpRequest();
+    //         xhr.open('POST', '/addPost');
+    //         xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    //         xhr.setRequestHeader('Accept', 'application/json');
+    //         xhr.onload = () => handleResponse(xhr, true);
+    //         const data = `title=${titleField.value}&data=${JSON.stringify(window.delta)}`;
+    //         //const postData = JSON.stringify(data);
+    //         xhr.send(data);
+    //         e.preventDefault();
+    //         return false;
+    //     }
+    // });
 
     init();
 });
