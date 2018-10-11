@@ -91,13 +91,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     handleResponse(xhr, true);
                     grid.refreshItems();
                     updateGrid(e);
-                    e.preventDefault();
-                    return false;
                 };
                 var data = 'title=' + titleField.value + '&data=' + JSON.stringify(window.delta);
                 //const postData = JSON.stringify(data);
                 xhr.send(data);
             }
+            e.preventDefault();
+            return false;
         });
     };
 
