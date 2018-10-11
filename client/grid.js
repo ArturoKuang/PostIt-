@@ -59,16 +59,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 xhr.open('POST', '/addPost');
                 xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
                 xhr.setRequestHeader('Accept', 'application/json');
-                xhr.onload = () => handleResponse(xhr, true);
+                xhr.onload = () => {
+                    handleResponse(xhr, true);
+                    grid.refreshItems();
+                    updateGrid(e);
+                    e.preventDefault();
+                    return false;
+                }
                 const data = `title=${titleField.value}&data=${JSON.stringify(window.delta)}`;
                 //const postData = JSON.stringify(data);
                 xhr.send(data);
-            }
-            if (xhr.status !== null) {
-                grid.refreshItems();
-                updateGrid(e);
-                e.preventDefault();
-                return false;
             }
         });
 

@@ -88,17 +88,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
                 xhr.setRequestHeader('Accept', 'application/json');
                 xhr.onload = function () {
-                    return handleResponse(xhr, true);
+                    handleResponse(xhr, true);
+                    grid.refreshItems();
+                    updateGrid(e);
+                    e.preventDefault();
+                    return false;
                 };
                 var data = 'title=' + titleField.value + '&data=' + JSON.stringify(window.delta);
                 //const postData = JSON.stringify(data);
                 xhr.send(data);
-            }
-            if (xhr.status !== null) {
-                grid.refreshItems();
-                updateGrid(e);
-                e.preventDefault();
-                return false;
             }
         });
     };
