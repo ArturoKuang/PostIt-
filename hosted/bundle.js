@@ -80,10 +80,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         updateButton.addEventListener('click', function (e) {
             var titleField = document.querySelector('#titleField');
+            var xhr = new XMLHttpRequest();
             if (titleField.value.length !== 0) {
                 window.delta = quill.getContents();
 
-                var xhr = new XMLHttpRequest();
                 xhr.open('POST', '/addPost');
                 xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
                 xhr.setRequestHeader('Accept', 'application/json');
@@ -94,10 +94,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 //const postData = JSON.stringify(data);
                 xhr.send(data);
             }
-            grid.refreshItems();
-            updateGrid(e);
-            e.preventDefault();
-            return false;
+            if (xhr.status !== null) {
+                grid.refreshItems();
+                updateGrid(e);
+                e.preventDefault();
+                return false;
+            }
         });
     };
 

@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function () {
             //TODO: GET REQUEST -> QUIL
             var postKey = e.target.innerText;
             if (e.target.className !== "grid muuri") {
-                if(e.target.className === "card"){
+                if (e.target.className === "card") {
                     postKey = e.target.children[0].innerText;
                 }
                 const titleField = document.querySelector('#titleField');
@@ -52,10 +52,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         updateButton.addEventListener('click', function (e) {
             const titleField = document.querySelector('#titleField');
+            const xhr = new XMLHttpRequest();
             if (titleField.value.length !== 0) {
                 window.delta = quill.getContents();
-    
-                const xhr = new XMLHttpRequest();
+
                 xhr.open('POST', '/addPost');
                 xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
                 xhr.setRequestHeader('Accept', 'application/json');
@@ -64,10 +64,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 //const postData = JSON.stringify(data);
                 xhr.send(data);
             }
-            grid.refreshItems();
-            updateGrid(e);
-            e.preventDefault();
-            return false;
+            if (xhr.status !== null) {
+                grid.refreshItems();
+                updateGrid(e);
+                e.preventDefault();
+                return false;
+            }
         });
 
     };
