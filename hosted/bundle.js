@@ -93,7 +93,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     updateGrid(e);
                 };
                 var data = 'title=' + titleField.value + '&data=' + JSON.stringify(window.delta);
-                //const postData = JSON.stringify(data);
                 xhr.send(data);
             }
             e.preventDefault();
@@ -189,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var generateElement = function generateElement(id, title) {
         var itemElem = document.createElement('div');
-        var height = getRandomInt(1, 2);
+        var height = title.length > 150 ? 2 : 1;
         var width = 2;
         var classNames = 'item h' + height + ' w' + width;
         var itemTemplate = '' + '<div class="' + classNames + '" data-id="' + id + '" data-title="' + title + '">' + '<div class="item-content">' + '<div class="card">' + '<div class="card-title">' + title + '</div>' + '<div class="card-id">' + id + '</div>' + '</div>' + '</div>' + '</div>';
@@ -207,24 +206,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     postText.enable(false);
-
-    // $('#save').click(function (e) {
-    //     const titleField = document.querySelector('#titleField');
-    //     if (titleField.value.length !== 0) {
-    //         window.delta = quill.getContents();
-
-    //         const xhr = new XMLHttpRequest();
-    //         xhr.open('POST', '/addPost');
-    //         xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-    //         xhr.setRequestHeader('Accept', 'application/json');
-    //         xhr.onload = () => handleResponse(xhr, true);
-    //         const data = `title=${titleField.value}&data=${JSON.stringify(window.delta)}`;
-    //         //const postData = JSON.stringify(data);
-    //         xhr.send(data);
-    //         e.preventDefault();
-    //         return false;
-    //     }
-    // });
 
     init();
 });
